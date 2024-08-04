@@ -11,14 +11,13 @@ const registerUser = async(req, res)=>{
     if(!username||!email||!password){
         res.status(400).json({error:"all inputes must be filled"})
         return 0 
-    }
-
+    }else{
     const exist = await model.findOne({email})
 
     if(exist){
         res.status(400).json({error:"email already used"})
 
-        return exist
+        return 0
     }
         
     const salt = await bcrypt.genSalt(10)
@@ -31,7 +30,9 @@ const registerUser = async(req, res)=>{
         res.status(200).json({email:user.email, token})
     } catch (error) {
         res.status(400).json({error:error.message})
-    }
+    }}
+
+    
     
     
 }
@@ -43,13 +44,15 @@ const loginUser = async(req, res)=>{
         res.status(400).json({error:"all inputes must be filled"})
         return 0 
     }
-    const user = await model.findOne({email})
+    const user = await model.findOne({email}) ||  await model.findOne({username:email})
     const secret = process.env.SECRET
+    
 
     if(!user){
+
         res.status(400).json({error:"user does not exist"})
 
-        return exist
+        return 0
     }
     const exist = await bcrypt.compare(password,user.password)
     if(!exist){
